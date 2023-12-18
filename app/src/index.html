@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="stylesToggleButton.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mini-Signal</title>
+    <script type="module" src="/main.js" defer></script>
+  </head>
+
+  <body data-theme="light">
+
+  <div class="column left">
+    <header>
+      <div class="circle"><span class="userFirstLetter">G</span></div>
+      <p>Chats</p>
+    </header>
+
+    <div id="chats">
+      <input type="text" id="searchBarUser" onkeyup="searchUser()" placeholder="Search user" title="Search user chat">
+      <div class="user" id="selected" onclick="onUserSelected(this)">
+        <div class="circle"><span class="friendFirstLetter">B</span></div>
+        <p>Boris</p>
+      </div>
+      <div class="user" onclick="onUserSelected(this)">
+        <div class="circle"><span class="friendFirstLetter">A</span></div>
+        <p>Alice</p>
+      </div>
+      <div class="user" onclick="onUserSelected(this)">
+        <div class="circle"><span class="friendFirstLetter">B</span></div>
+        <p>Bob</p>
+      </div>
+      <div class="user" onclick="onUserSelected(this)">
+        <div class="circle"><span class="friendFirstLetter">S</span></div>
+        <p>Samantha</p>
+      </div>
+      <div class="user" onclick="onUserSelected(this)">
+        <div class="circle"><span class="friendFirstLetter">V</span></div>
+        <p>Victor</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="column right">
+    <header>
+      <div class="bundle">
+        <div class="circle"><span id="currentFriendFirstLetter">B</span></div>
+        <p id="currentFriendName">Boris</p>
+      </div>
+      <div class="bundle">
+        <input type="text" id="searchBarMessage" onkeyup="searchMessage(this)" placeholder="Search message" title="Search message">
+        <p id="messagesFound"><span id="up"></span><span id="down"></span> <span id="currentMessageFoundNumber">x</span>/<span id="nbMessagesFound">x</span></p>
+        <div class="toggleWrapper">
+          <input type="checkbox" class="dn" id="dn"/>
+          <label for="dn" id="toggle">
+                    <span class="toggle__handler">
+                      <span class="crater crater--1"></span>
+                      <span class="crater crater--2"></span>
+                      <span class="crater crater--3"></span>
+                    </span>
+            <span class="star star--1"></span>
+            <span class="star star--2"></span>
+            <span class="star star--3"></span>
+            <span class="star star--4"></span>
+            <span class="star star--5"></span>
+            <span class="star star--6"></span>
+          </label>
+        </div>
+      </div>
+    </header>
+
+    <div id="messages">
+      <div class="container first">
+        (Start) Hello. How are you today?
+      </div>
+
+      <div class="container yours">
+        Hey! I'm fine. Thanks for asking!
+      </div>
+
+      <div class="container">
+        Sweet! So, what do you wanna do today?
+      </div>
+
+      <div class="container yours">
+        Nah, I dunno. Play soccer.. or learn more coding perhaps? euazheiouzagoegyigeozagtgeyiozagyoegaogiegzai euazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzai euazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzai
+      </div>
+
+      <div class="container yours">
+        Nah, I dunno. Play soccer.. or learn more coding perhaps? euazheiouzagoegyigeozagtgeyiozagyoegaogiegzai euazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzai euazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzai
+      </div>
+
+      <div class="container yours">
+        Nah, I dunno. Play soccer.. or learn more coding perhaps? euazheiouzagoegyigeozagtgeyiozagyoegaogiegzai euazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzai euazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzai
+      </div>
+
+      <div class="container yours">
+        Nah, I dunno. Play soccer.. or learn more coding perhaps? euazheiouzagoegyigeozagtgeyiozagyoegaogiegzai euazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzai euazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzai
+      </div>
+
+      <div class="container yours">
+        Nah, I dunno. Play soccer.. or learn more coding perhaps? euazheiouzagoegyigeozagtgeyiozagyoegaogiegzai euazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzai euazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzai
+      </div>
+
+      <div class="container yours">
+        Nah, I dunno. Play soccer.. or learn more coding perhaps? euazheiouzagoegyigeozagtgeyiozagyoegaogiegzai euazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzai euazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzai
+      </div>
+
+      <div class="container">
+        Nah, I dunno. Play soccer.. or learn more coding perhaps? euazheiouzagoegyigeozagtgeyiozagyoegaogiegzai euazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzai euazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzai
+      </div>
+      <div class="container">
+        Nah, I dunno. Play soccer.. or learn more coding perhaps? euazheiouzagoegyigeozagtgeyiozagyoegaogiegzai euazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzai euazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzai
+      </div>
+      <div class="container">
+        Nah, I dunno. Play soccer.. or learn more coding perhaps? euazheiouzagoegyigeozagtgeyiozagyoegaogiegzai euazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzai euazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzai
+      </div>
+      <div class="container">
+        Nah, I dunno. Play soccer.. or learn more coding perhaps? euazheiouzagoegyigeozagtgeyiozagyoegaogiegzai euazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzai euazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzaieuazheiouzagoegyigeozagtgeyiozagyoegaogiegzai
+      </div>
+
+      <div class="container yours">
+        END
+      </div>
+
+      <div id="anchor"></div>
+    </div>
+
+    <footer>
+      <span id="message-input" role="textbox" contenteditable></span>
+      <div id="containerSendBtn">
+        <button id="btnSend"><img src="assets/send.png" alt="SendIcon"></button>
+      </div>
+    </footer>
+  </div>
+
+  <script src="appInteraction.js"></script>
+  </body>
+</html>

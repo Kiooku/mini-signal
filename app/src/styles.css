@@ -1,0 +1,388 @@
+/* http://meyerweb.com/eric/tools/css/reset/
+   v2.0 | 20110126
+   License: none (public domain)
+*/
+
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed,
+figure, figcaption, footer, header, hgroup,
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 100%;
+  font: inherit;
+  vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure,
+footer, header, hgroup, menu, nav, section {
+  display: block;
+}
+body {
+  line-height: 1;
+}
+ol, ul {
+  list-style: none;
+}
+blockquote, q {
+  quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+  content: '';
+  content: none;
+}
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+/* Start CSS */
+
+/* https://www.realtimecolors.com/?colors=150d1c-f1ebf5-523168-cc93a5-a34e4d&fonts=Poppins-Poppins */
+/* http://meyerweb.com/eric/tools/css/reset/
+   v2.0 | 20110126
+   License: none (public domain)
+*/
+
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed,
+figure, figcaption, footer, header, hgroup,
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 100%;
+  font: inherit;
+  vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure,
+footer, header, hgroup, menu, nav, section {
+  display: block;
+}
+body {
+  line-height: 1;
+}
+ol, ul {
+  list-style: none;
+}
+blockquote, q {
+  quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+  content: '';
+  content: none;
+}
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+/* Start CSS */
+
+@font-face { /* San Fransisco */
+  font-family: 'sf';
+  src: url('fonts/sf/pro/SF-Pro-Display-Regular.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+/* https://www.realtimecolors.com/?colors=040607-f3f7f8-6ba0ac-a8a1ca-9f83b9&fonts=Poppins-Poppins */
+body[data-theme="light"] {
+  --text: rgb(4, 6, 7);
+  --background: rgb(241, 241, 241);
+  --backgroundMessages: rgb(243, 247, 248, 98%);
+  --backgroundHeaderFooter: rgb(243, 247, 248, 0%);
+  --primary: rgb(107, 160, 172);
+  --primary50: rgb(107, 160, 172, 50%);
+  --secondary: rgb(168, 161, 202);
+  --secondary50: rgb(168, 161, 202, 50%);
+  --accent: rgb(159, 131, 185);
+  --accentSelection: rgb(159, 131, 185, 40%);
+}
+body[data-theme="dark"] {
+  --text: rgb(249, 250, 251);
+  --background: rgb(8, 12, 13, 95%);
+  --backgroundMessages: rgb(8, 12, 13, 85%);
+  --backgroundHeaderFooter: rgb(8, 12, 13, 0%);
+  --primary: rgb(21 95 112);
+  --primary50: rgb(102 156 169);
+  --secondary: rgb(60, 53, 95);
+  --secondary50: rgb(154 143 203);
+  --accent: rgb(124 94 153);
+  --accentSelection: rgb(98, 70, 124, 50%);
+}
+
+
+/* primary: sender, secondary: receiver*/
+/* accent: icons?? (arrow and so on) */
+html, body {
+  height: 100%;
+  font-family: "sf", sans-serif;
+}
+
+body, .right, .left, header, footer {
+  -webkit-transition: .5s;
+  transition: .5s;
+}
+
+header, footer {
+  background-color: var(--backgroundHeaderFooter);
+  color: var(--text);
+  backdrop-filter: saturate(120%) blur(14px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 20px 10px;
+  width: 78%;
+  position: fixed;
+  z-index: 1;
+}
+
+header {
+  top: 0;
+  height: 5%;
+  text-align: center;
+}
+
+footer {
+  bottom: 0;
+  height: 5%;
+}
+
+.column {
+  height: 100%;
+  float: left;
+}
+
+.left {
+  width: 20%;
+  background-color: var(--background);
+}
+
+.left header {
+  position: relative;
+  width: auto;
+}
+
+.left .circle {
+  width: 2vw;
+  height: 2vw;
+  font: 1.858vw Arial, sans-serif;
+}
+
+.right header {
+  justify-content: space-between;
+}
+
+.bundle {
+  display: flex;
+}
+
+.right header p {
+  margin-top: .5vw;
+}
+
+.user {
+  display: flex;
+  flex-direction: row;
+  padding: 1vw;
+  cursor: pointer;
+  color: var(--text);
+}
+
+#selected {
+  background-color: var(--accentSelection);
+}
+
+.user p, .left header p, .right header p {
+  display: flex;
+  align-items: center;
+  margin-left: 1vw;
+  font-weight: bold;
+  font-size: 1.5vw;
+}
+
+#searchBarUser, #searchBarMessage {
+  font-size: 1.138vw;
+  padding: 0.853vw 1vw;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  margin: 1vw;
+}
+
+#searchBarMessage {
+  margin: .6vw .1vw 0vw 0vw;
+  padding: 1vw 1vw;
+}
+
+#messagesFound {
+  margin-right: 1.1vw;
+  visibility: hidden;
+}
+
+.right {
+  width: 80%;
+  background-color: var(--backgroundMessages);
+}
+
+.right footer, header {
+  display: flex;
+  flex-direction: row;
+  padding: 1vw;
+}
+
+#messages {
+  margin: 0vw 1vw;
+  overflow-y: auto;
+  height: 100%;
+  /* Scroll bar style */
+  scrollbar-width: thin;
+}
+
+#messages::-webkit-scrollbar {
+  width: 8px;
+}
+
+#messages::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+  background-color: #555;
+}
+
+#messages * {
+  overflow-anchor: none;
+}
+/* https://css-tricks.com/books/greatest-css-tricks/pin-scrolling-to-bottom/ */
+#anchor {
+  overflow-anchor: auto;
+  margin-bottom: 7vw;
+  height: 1px;
+}
+
+.container {
+  background-color: var(--primary50);
+  border-radius: 10px;
+  padding: 10px;
+  margin: 15px 0;
+  max-width: 80%;
+  overflow-wrap: break-word;
+  position: relative;
+}
+
+#highlight {
+  box-shadow: 0px 0px 15px var(--accent);
+}
+
+.yours {
+  background-color: var(--secondary50);
+  left: 16%;
+}
+
+#message-input {
+  border: 1px solid var(--text);
+  border-radius: 10px;
+  display: block;
+  width: 90%;
+  overflow: hidden;
+  min-height: 30px;
+  line-height: 20px;
+  padding: 5px;
+}
+
+#message-input[contenteditable]:empty::before {
+  content: "Message";
+  position: absolute;
+  color: var(--text);
+}
+
+#message-input:focus {
+  border: none; /* Remove border on focus */
+}
+
+.circle {
+  border-radius: 50%;
+  width: 34px;
+  height: 34px;
+  padding: 10px;
+  /*background: var(--primary50);*/
+  background-color: var(--primary);
+  color: #fff;
+  text-align: center;
+  font: 32px Arial, sans-serif;
+}
+
+.first {
+  margin-top: 7vw;
+}
+
+#containerSendBtn {
+  display: flex;
+  height: 100%;
+  justify-content: center;
+  align-items: center;
+  width: 7%;
+}
+
+#btnSend {
+  border: none;
+  color: var(--text);
+  background-color: var(--accent);
+  border-radius: 25px;
+  cursor: pointer;
+  margin-left: 40%;
+  width: 3vw;
+  height: 3vw;
+  transition: .5s;
+  box-shadow: 0px 2px 5px var(--accent);
+}
+
+#btnSend img {
+  width: 1vw;
+  height: 1vw;
+}
+
+#btnSend:hover {
+  transform: translate(0, -10px);
+}
+
+#up, #down {
+  cursor: pointer;
+  border: solid var(--text);
+  border-width: 0 3px 3px 0;
+  display: inline-block;
+  padding: .5vw;
+  margin: 0vw .5vw;
+}
+
+#up {
+  transform: rotate(-135deg);
+  -webkit-transform: rotate(-135deg);
+  margin-top: .6vw;
+}
+
+#down {
+  transform: rotate(45deg);
+  -webkit-transform: rotate(45deg);
+  margin-bottom: .6vw;
+  margin-right: 1vw;
+}

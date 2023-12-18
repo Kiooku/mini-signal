@@ -47,6 +47,9 @@ for the user interface.
 
 #### TODO
 
+**Note for later**: `overflow-anchor: auto` and `backdrop-filter: saturate(120%) blur(14px);` not supported on Tauri 
+(which slightly change the quality of the result).
+
 ## Resources
 - https://signal.org/docs/
 - https://tokio.rs/tokio/tutorial
