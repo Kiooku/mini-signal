@@ -37,11 +37,30 @@ for the user interface.
 
 ### Cryptography
 
-#### TODO talk about DoubleRatchetAlgorithm, X3DH
+The end-to-end encryption is done using the [double ratchet algorithm with header encryption](https://github.com/Kiooku/Cryptography-Notebook/tree/main/E2EE/double-ratchet-with-header-encryption) initialize with the [X3DH](https://github.com/Kiooku/Cryptography-Notebook/tree/main/AsymmetricCiphers/x3dh) protocol.
+
+All the rust implementation of these two protocol can be seen on my [Cryptography-Notebook repository](https://github.com/Kiooku/Cryptography-Notebook/tree/main/E2EE).
 
 ### Server
 
-#### TODO
+The server use a TCP over TLS connection to communicate with the client.
+
+All the server is done in Rust using the [`tokio`](https://tokio.rs/), [`warp`](https://github.com/seanmonstar/warp) and [`native-tls`](https://github.com/sfackler/rust-native-tls) crate.
+
+The TCP over TLS connection can be replaced with [XMPP](https://xmpp.org/), but I wanted to make a Rust project and XMPP 
+does not have a reliable crate, and I wanted to make the server using Rust for learning purpose.
+
+Users must identify themselves before sending or collecting data.
+
+The server deal with three sqlite databases. I used [`rusqlite`](https://github.com/rusqlite/rusqlite) to interact with them. 
+
+**Message database**: Use to store messages when the user is not connected to the server. Messages are deleted once the user has retrieved them.
+
+**X3DH keys database**: Use to store the X3DH keys used to initiate E2EE.
+
+**Password database**: Store user password using [`argon2id`](https://docs.rs/rust-argon2/latest/argon2/) hash function to follow [OWASP recommendations](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html).
+
+#### TODO add possible improvement
 
 ### Client
 
