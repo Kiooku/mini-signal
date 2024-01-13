@@ -1,6 +1,6 @@
-const { invoke } = window.__TAURI__.tauri;
+//const { invoke, open } = window.__TAURI__.tauri;
 
-let greetInputEl;
+/*let greetInputEl;
 let greetMsgEl;
 
 async function greet() {
@@ -15,4 +15,13 @@ window.addEventListener("DOMContentLoaded", () => {
     e.preventDefault();
     greet();
   });
-});
+});*/
+/*
+import { appWindow, WebviewWindow } from '@tauri-apps/api/window'
+
+// emit an event that is only visible to the current window
+appWindow.emit('event', { message: 'Tauri is awesome!' })
+
+// create a new webview window and emit an event only to that window
+const webview = new WebviewWindow('window')
+webview.emit('event')*/

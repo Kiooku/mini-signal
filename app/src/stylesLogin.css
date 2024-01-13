@@ -1,0 +1,167 @@
+/* http://meyerweb.com/eric/tools/css/reset/
+   v2.0 | 20110126
+   License: none (public domain)
+*/
+
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed,
+figure, figcaption, footer, header, hgroup,
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 100%;
+    font: inherit;
+    vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure,
+footer, header, hgroup, menu, nav, section {
+    display: block;
+}
+body {
+    line-height: 1;
+}
+ol, ul {
+    list-style: none;
+}
+blockquote, q {
+    quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+    content: '';
+    content: none;
+}
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+/* Start CSS */
+
+@font-face { /* San Fransisco */
+    font-family: 'sf';
+    src: url('fonts/sf/pro/SF-Pro-Display-Regular.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+html, body {
+    height: 100%;
+    font-family: "sf", sans-serif;
+}
+
+#container-login {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgb(241, 241, 241);
+    width: 100%;
+    height: 100%;
+}
+
+#wrap-login {
+    width: 390px;
+    background: white;
+    border-radius: 10px;
+    padding: 35px 55px;
+    box-shadow: 0 5px 10px 0 rgba(0,0,0,.1);
+    -moz-box-shadow: 0 5px 10px 0 rgba(0,0,0,.1);
+    -webkit-box-shadow: 0 5px 10px 0 rgba(0,0,0,.1);
+    -o-box-shadow: 0 5px 10px 0 rgba(0,0,0,.1);
+    -ms-box-shadow: 0 5px 10px 0 rgba(0,0,0,.1);
+}
+
+form {
+    width: 100%;
+    position: relative;
+}
+
+h1 {
+    font-size: 30px;
+    color: #333;
+    font-weight: bold;
+    text-align: center;
+    padding-bottom: 48px;
+}
+
+.wrap-input {
+    margin-bottom: 37px;
+}
+
+input {
+    border: none;
+    color: #555;
+    font-size: 15px;
+    padding: 5px;
+    width: 100%;
+    border-bottom: 2px solid #adadad;
+    transition:  all .3s linear;
+}
+
+input:focus {
+    border: none;
+    border-bottom: 2px solid rgb(159, 131, 185);
+    outline: 0;
+}
+
+input:focus + label, input:not(:placeholder-shown) + label {
+    transform: translateY(-20px);
+    opacity: 1;
+}
+
+input:focus::placeholder {
+    color: transparent;
+}
+
+.floating-label {
+    position: relative;
+}
+
+.floating-label label {
+    position: absolute;
+    top: calc(21%);
+    left: 6px;
+    color: grey;
+    opacity: 0.4;
+    transition: all .5s ease;
+}
+
+
+
+#login-btn, #register-btn {
+    cursor: pointer;
+    margin: 0 10px;
+    font-weight: bold;
+    border-radius: 10px;
+    color: rgb(159, 131, 185);
+    background-color: rgba(255, 255, 255, 1);
+    border: 1px solid rgb(159, 131, 185);
+    font-size: 15px;
+    box-shadow: 0 0 20px rgb(159, 131, 185, 0.2);
+    transition: 0.4s;
+    padding: 0 20px;
+    width: 100%;
+    height: 50px;
+}
+
+#login-btn:hover, #register-btn:hover {
+    color: white;
+    box-shadow: 0 0 20px rgb(159, 131, 185, 0.6);
+    background-color: rgb(159, 131, 185);
+}
+
+.form-footer {
+    text-align: center;
+    padding-top: 115px
+}

@@ -13,7 +13,7 @@ edition = "2021"
 tauri-build = { version = "1.5", features = [] }
 
 [dependencies]
-tauri = { version = "1.5", features = ["shell-open"] }
+tauri = { version = "1.5", features = [ "dialog-message", "window-all", "shell-open"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 hmac = "0.12.1"
@@ -26,7 +26,10 @@ ed25519-dalek = "2.1.0"
 rand_core = "0.6.4"
 rand = "0.8.5"
 hex-literal = "0.4.1"
-
+argon2 = "0.5.2"
+reqwest = { version = "0.11", features = ["json", "native-tls"] }
+tokio = { version = "1.35.0", features = ["full"] }
+lazy_static = "1.4.0"
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem
 # DO NOT REMOVE!!

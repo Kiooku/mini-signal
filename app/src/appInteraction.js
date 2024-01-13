@@ -146,3 +146,12 @@ function updateMessageBtnColor() {
         upMessageBtn.style.borderColor = "var(--text)";
     }
 }
+
+// JS for Tauri app
+const { invoke } = window.__TAURI__.tauri;
+const { TauriEvent } = window.__TAURI__.event;
+const { appWindow } = window.__TAURI__.window;
+appWindow.listen(TauriEvent.WINDOW_CLOSE_REQUESTED, async () => {
+    await invoke("log_out");
+    appWindow.close();
+});

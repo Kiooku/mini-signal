@@ -13,6 +13,9 @@ for the user interface.
 *Obviously, don't use this application for real-world usage. Nothing has been reviewed by professionals and may include serious fault.*
 *</br>However, it's a great tool for learning (feel free to use it to test some attacks or get a better understanding of a secure message application).*
 
+**Keywords**: end-to-end messaging service, double ratchet, E2EE, X3DH, TCP, TLS, Signal, SQLite, AES-GCM-SIV, AEAD,
+Rust, Tauri, HTML, CSS, JS, Security, Privacy, Concurrency, Tokio, Docker
+
 ## Table of content
 
 1. [How to install mini-signal](#how-to-install-mini-signal)

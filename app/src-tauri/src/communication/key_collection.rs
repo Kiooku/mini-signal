@@ -150,6 +150,40 @@ impl ServerKeyCollection {
     pub fn get_opk_bundle(&self) -> Vec<PublicKey> {
         self.opk_bundle.clone()
     }
+
+    pub fn get_opk_bundle_bytes(&self) -> Vec<[u8;32]> {
+        let mut res: Vec<[u8;32]> = Vec::new();
+        for key in self.opk_bundle.clone() {
+            res.push(key.to_bytes());
+        }
+        res
+    }
+
+    pub fn get_signature_to_bytes(&self) -> [[u8; 32]; 2] {
+        /*let r_bytes = self.signature.r_bytes();
+        let s_bytes = self.signature.s_bytes();
+
+        let mut result = [[0; 32]; 2];
+
+        if r_bytes.len() == 32 {
+            result[0].copy_from_slice(&r_bytes);
+        } else {
+            panic!("Error to get the signature (r_bytes)")
+        }
+
+        if s_bytes.len() == 32 {
+            result[1].copy_from_slice(&s_bytes);
+        } else {
+            panic!("Error to get the signature (s_bytes)")
+        }
+
+        result*/
+        [self.signature.r_bytes().clone(), *self.signature.s_bytes()]
+    }
+
+    pub fn get_verifying_key(&self) -> VerifyingKey {
+        self.verifying_key
+    }
 }
 
 impl fmt::Display for KeyError {

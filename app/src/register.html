@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register</title>
+  <link rel="stylesheet" href="stylesLogin.css">
+  <script type="module" src="main.js" defer></script>
+  <script type="module" src="passwordCheck.js" defer></script>
+</head>
+<body>
+  <div id="container-login">
+    <div id="wrap-login">
+      <form id="register-form">
+        <h1>Welcome to <a href="https://github.com/Kiooku/mini-signal" target="_blank">mini-signal</a></h1>
+
+        <div class="wrap-input floating-label">
+          <input type="text" id="username" placeholder="Username" name="username" required>
+          <label for="username">Username</label>
+          <span class="focus-input"></span>
+        </div>
+
+        <div class="wrap-input floating-label">
+          <span class="btn-show-pass"></span>
+          <input type="password" id="password" placeholder="Password" name="password" required minlength="12">
+          <label for="password">Password</label>
+          <span class="focus-input"></span>
+        </div>
+
+        <div class="wrap-input floating-label">
+          <span class="btn-show-pass"></span>
+          <input type="password" id="confirm-password" placeholder="Confirm Password" name="confirm-password" required minlength="12">
+          <label for="confirm-password">Confirm Password</label>
+          <span class="focus-input"></span>
+        </div>
+
+        <button id="register-btn" type="button">REGISTER</button>
+
+        <div class="form-footer">
+          <span>You have an account? </span>
+          <a href="index.html"> Login</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</body>
+</html>
