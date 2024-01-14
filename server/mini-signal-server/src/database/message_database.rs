@@ -34,8 +34,8 @@ impl MessageDatabase {
             let ciphertext: Vec<u8> = row.get(4)?;
             let nonce: Vec<u8> = row.get(5)?;
             //let ek_sender: Option<[u8;32]> = if row.get::<usize, [u8;32]>(6).is_ok() { Some(row.get::<usize, [u8;32]>(6).unwrap()) } else { None };
-            let ek_sender: Option<[u8;32]> = if row.get(6).is_ok() { Some(row.get(6).unwrap()) } else { None };
-            let opk_used: Option<[u8;32]> = if row.get(7).is_ok() { Some(row.get(7).unwrap()) } else { None };
+            let ek_sender: Option<[u8;32]> = if row.get::<usize, [u8;32]>(6).is_ok() { Some(row.get(6).unwrap()) } else { None };
+            let opk_used: Option<[u8;32]> = if row.get::<usize, [u8;32]>(7).is_ok() { Some(row.get(7).unwrap()) } else { None };
 
             Ok((message_id, username_sender, header_encrypted, header_nonce, ciphertext, nonce, ek_sender, opk_used))
         })?;
@@ -53,13 +53,14 @@ impl MessageDatabase {
                        header_encrypted: Vec<u8>, header_nonce: Vec<u8>,
                        ciphertext: Vec<u8>, nonce: Vec<u8>,
                        ek_sender: Option<[u8;32]>, opk_used: Option<[u8;32]>) -> Result<()> {
+        println!("We are going to insert a message");
         let tx: Transaction = self.conn.transaction()?;
 
         tx.execute("INSERT INTO messages
         (username_receiver, username_sender, header_encrypted, header_nonce, ciphertext, ciphertext_nonce, ek_sender, opk_used)\
-        VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
+        VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
                    (username_receiver, username_sender, header_encrypted, header_nonce, ciphertext, nonce, ek_sender, opk_used))?;
-
+        println!("Message is normally inserted");
         tx.commit()
     }
 

@@ -1,9 +1,4 @@
 use rusqlite::{Connection, params, Result, Statement, Transaction};
-use argon2::{password_hash::{
-    rand_core::OsRng,
-    PasswordHash, PasswordHasher, PasswordVerifier, SaltString, Error
-}, Argon2};
-// Do I need tokio_rusqlite
 
 pub struct PasswordDatabase {
     conn: Connection
@@ -48,7 +43,7 @@ impl PasswordDatabase {
     pub fn insert_user(&mut self, username: &String, password: &String) -> Result<()> {
         let tx: Transaction = self.conn.transaction()?;
 
-        let password_hash = PasswordDatabase::get_hash(password);
+        let password_hash = password;//PasswordDatabase::get_hash(password);
         tx.execute("INSERT INTO passwords (username, password) VALUES (?1, ?2)",
                    (username, password_hash))?;
 
@@ -70,25 +65,7 @@ impl PasswordDatabase {
 
         let user_password_hash: Vec<String> = req_user_password?;
         if user_password_hash.is_empty() { return Ok(false) };
-        let parsed_hash: PasswordHash = match PasswordHash::new(&user_password_hash[0]) {
-            Ok(parsed_hash) => parsed_hash,
-            Err(error) => panic!("{}", error),
-        };
 
-        Ok(Argon2::default().verify_password(password.as_ref(), &parsed_hash).is_ok())
-    }
-
-    fn get_hash(password: &String) -> String {
-        let salt: SaltString = match SaltString::from_b64("vRpg/cByxpn6m1L0ZPF5ew") { //SaltString::generate(&mut OsRng);
-            Ok(salt) => salt,
-            Err(error) => panic!("{}", error),
-        };
-
-        let argon2: Argon2 = Argon2::default();
-        let hash: String = match argon2.hash_password(password.as_bytes(), &salt) {
-            Ok(hash) => hash.to_string(),
-            Err(error) => panic!("{}", error),
-        };
-        hash
+        Ok(password == user_password_hash[0])
     }
 }
