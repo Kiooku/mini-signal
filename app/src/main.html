@@ -13,32 +13,13 @@
 
   <div class="column left">
     <header>
-      <div class="circle"><span class="userFirstLetter">G</span></div>
+      <div class="circle"><span class="userFirstLetter"></span></div>
       <p>Chats</p>
     </header>
 
     <div id="chats">
       <input type="text" id="searchBarUser" onkeyup="searchUser()" placeholder="Search user" title="Search user chat">
-      <div class="user" id="selected" onclick="onUserSelected(this)">
-        <div class="circle"><span class="friendFirstLetter">B</span></div>
-        <p>Boris</p>
-      </div>
-      <div class="user" onclick="onUserSelected(this)">
-        <div class="circle"><span class="friendFirstLetter">A</span></div>
-        <p>Alice</p>
-      </div>
-      <div class="user" onclick="onUserSelected(this)">
-        <div class="circle"><span class="friendFirstLetter">B</span></div>
-        <p>Bob</p>
-      </div>
-      <div class="user" onclick="onUserSelected(this)">
-        <div class="circle"><span class="friendFirstLetter">S</span></div>
-        <p>Samantha</p>
-      </div>
-      <div class="user" onclick="onUserSelected(this)">
-        <div class="circle"><span class="friendFirstLetter">V</span></div>
-        <p>Victor</p>
-      </div>
+      <div id="user-anchor"></div>
     </div>
   </div>
 

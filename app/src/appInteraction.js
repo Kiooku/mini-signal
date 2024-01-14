@@ -151,7 +151,52 @@ function updateMessageBtnColor() {
 const { invoke } = window.__TAURI__.tauri;
 const { TauriEvent } = window.__TAURI__.event;
 const { appWindow } = window.__TAURI__.window;
+
+// TODO add the message gathering
+
+window.onload = function() {
+    let username = localStorage.getItem('username');
+    document.querySelector('.column.left header .circle .userFirstLetter').innerText = username.charAt(0).toUpperCase();
+}
+
 appWindow.listen(TauriEvent.WINDOW_CLOSE_REQUESTED, async () => {
     await invoke("log_out");
     appWindow.close();
 });
+
+const usernameList = document.getElementById("chats");
+
+async function setUserList() {
+    let userList = await invoke("get_all_users");
+
+    userList.forEach(function(username) {
+        console.log(usernameList.childElementCount);
+
+        let newUserDiv = document.createElement("div");
+        newUserDiv.className = "user";
+        if (usernameList.childElementCount === 2) { // Number of element without any user added
+            newUserDiv.id = "selected";
+        }
+
+        let circleDiv = document.createElement("div");
+        circleDiv.className = "circle";
+
+        let firstLetterSpan = document.createElement("span");
+        firstLetterSpan.className = "friendFirstLetter";
+        firstLetterSpan.innerText = username.charAt(0).toUpperCase();
+
+        let nameParagraph = document.createElement("p");
+        nameParagraph.innerText = username;
+
+        circleDiv.appendChild(firstLetterSpan);
+        newUserDiv.appendChild(circleDiv);
+        newUserDiv.appendChild(nameParagraph);
+        newUserDiv.onclick = function() {
+            onUserSelected(newUserDiv);
+        };
+
+        usernameList.insertBefore(newUserDiv, usernameList.children[usernameList.childElementCount - 1]);
+    });
+}
+
+setUserList()

@@ -140,6 +140,7 @@ body[data-theme="dark"] {
 html, body {
   height: 100%;
   font-family: "sf", sans-serif;
+  overflow: hidden;
 }
 
 body, .right, .left, header, footer {
@@ -200,6 +201,11 @@ footer {
 
 .right header p {
   margin-top: .5vw;
+}
+
+#chats {
+  height: 100%;
+  overflow-y: auto;
 }
 
 .user {
@@ -275,8 +281,13 @@ footer {
 /* https://css-tricks.com/books/greatest-css-tricks/pin-scrolling-to-bottom/ */
 #anchor {
   overflow-anchor: auto;
-  margin-bottom: 7vw;
+  margin-bottom: 9vh;
   height: 1px;
+}
+
+#user-anchor {
+  height: 1px;
+  margin-bottom: 5vw;
 }
 
 .container {
@@ -332,7 +343,7 @@ footer {
 }
 
 .first {
-  margin-top: 7vw;
+  margin-top: 10vh;
 }
 
 #containerSendBtn {

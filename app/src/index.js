@@ -8,6 +8,7 @@ loginButton.addEventListener("click", async () => {
         let password = document.getElementById("password").value;
         let isValidCredential = await invoke("verify_credential", { username: username, password: password });
         if (isValidCredential) {
+            localStorage.setItem('username', username);
             window.location.href = "main.html";
         } else {
             alert("Invalid login credential. Please try again."); // Alert not working on tauri

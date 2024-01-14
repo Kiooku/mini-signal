@@ -14,6 +14,7 @@ pub enum Action {
     },
     LogOut, // Replace logout with tcp connection stopped
     GetAllUsers,
+    GetMessages,
     PublishX3DHInformation { // Sent when the user is created (Client to the Server)
     ik: [u8; 32],
         spk: [u8; 32],
@@ -30,7 +31,7 @@ pub enum Action {
         opk_bundle: Vec<[u8; 32]>,
     },
     GetUserPublicKeys { // Client to the Server (handle user does not exist)
-    username: String,
+        username: String,
     },
     SendMessage {
         username_receiver: String,

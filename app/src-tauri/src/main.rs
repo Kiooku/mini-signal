@@ -6,6 +6,7 @@ mod tcp_client;
 mod communication;
 mod double_ratchet;
 mod x3dh;
+mod database;
 
 use std::iter::successors;
 use std::thread::current;
@@ -102,13 +103,6 @@ async fn register(username: &str, password: &str) -> Result<bool, String> {
         },
         Err(error) => Err(format!("Error during register (post_info): {}", error)),
     }
-    /*match result {
-        Ok(res) => {
-            let server_res = CLIENT.get_result(res).await;
-            println!("{:?}", server_res);
-            Ok(true) }, // TODO replace with the return value
-        Err(error) => Err(format!("{}", error)),
-    }*/
 }
 
 #[tauri::command]
@@ -121,10 +115,70 @@ async fn log_out() -> Result<(), String> {
     }
 }
 
+#[tauri::command]
+async fn get_all_users() -> Result<Vec<String>, String> {
+    let post_info = CLIENT.post(Action::GetAllUsers).await;
+
+    match post_info {
+        Ok(info) => {
+            match CLIENT.get_result(info).await {
+                Ok(ServerResponse::UserList { result }) => Ok(result),
+                Err(error) => Err(format!("Error when collecting all the users: {}", error)),
+                Ok(server_response) => Err(format!("Error when collecting all the users (bad server response): {:?}", server_response)),
+            }
+        },
+        Err(error) => Err(format!("Error when gathering all the users (post_info): {}", error)),
+    }
+}
+
+#[tauri::command]
+async fn get_messages() -> Result<Option<Vec<(String, Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>, Option<[u8;32]>, Option<[u8;32]>)>>, String> {
+    let post_info = CLIENT.post(Action::GetMessages).await;
+
+    match post_info {
+        Ok(info) => {
+            match CLIENT.get_result(info).await {
+                Ok(ServerResponse::Messages { success, new_messages, messages }) => {
+                    if success && new_messages {
+                        return Ok(Some(messages.unwrap()))
+                    }
+                    Ok(None)
+                },
+                Err(error) => Err(format!("Error when collecting messages: {}", error)),
+                Ok(server_response) => Err(format!("Error when collection messages (bad server response): {:?}", server_response)),
+            }
+        },
+        Err(error) => Err(format!("Error when collection all the messages (post_info): {}", error)),
+    }
+}
+
+// TODO maybe that I don't need this function to be a tauri::command and can just use it in the send_message
+#[tauri::command]
+async fn get_user_public_key(username: &str) -> Result<Vec<([u8;32], [u8;32], Option<[u8;32]>, [[u8;32]; 2], [u8;32])>, String> {
+    let post_info = CLIENT.post(Action::GetUserPublicKeys { username: username.to_string() }).await;
+
+    match post_info {
+        Ok(info) => {
+            match CLIENT.get_result(info).await {
+                Ok(ServerResponse::UserPublicKeys { ik, spk, opk, signature, verifying_key }) => Ok(vec![(ik, spk, opk, signature, verifying_key)]),
+                Err(error) => Err(format!("Error when collecting user public keys: {}", error)),
+                Ok(server_response) => Err(format!("Error when collecting user public keys (bad server response): {:?}", server_response)),
+            }
+        },
+        Err(error) => Err(format!("Error when collecting user public keys (post_info): {}", error)),
+    }
+}
+
+#[tauri::command]
+async fn send_message(username_receiver: &str, message: &str) -> Result<bool, String> {
+    // TODO use the double ratchet code to encrypt the message
+    todo!()
+}
+
 #[tokio::main]
 async fn main() -> Result<(), reqwest::Error> {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![verify_credential, register, log_out])
+        .invoke_handler(tauri::generate_handler![verify_credential, register, log_out, get_all_users, get_messages, get_user_public_key, send_message])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 
