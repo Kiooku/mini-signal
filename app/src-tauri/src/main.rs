@@ -8,16 +8,16 @@ mod double_ratchet;
 mod x3dh;
 mod database;
 
-use std::iter::successors;
-use std::thread::current;
 use lazy_static::lazy_static;
 use tauri::Manager;
 use serde::{Deserialize, Serialize};
 use hash::get_hash;
 use tcp_client::{MiniSignalClient, Action, ServerResponse};
-use communication::client;
+use std::sync::{Arc, Mutex};
+use once_cell::sync::Lazy;
 use crate::communication::client::Client;
 use crate::communication::key_collection::ServerKeyCollection;
+use crate::database::message_database::MessageDatabase;
 
 lazy_static! {
     static ref CLIENT: MiniSignalClient = {
@@ -28,11 +28,21 @@ lazy_static! {
     };
 }
 
+static MESSAGE_DATABASE: Lazy<Arc<Mutex<Option<MessageDatabase>>>> = Lazy::new(|| {
+    Arc::new(Mutex::new(None))
+});
+
+fn initialize_database(username: &str) {
+    let mut database = MESSAGE_DATABASE.lock().unwrap();
+    if database.is_none() {
+        *database = Some(MessageDatabase::new(username).expect("Failed to initialize the database"));
+    }
+}
+
 // TODO create a get client result (remove code duplication)
 
 #[tauri::command]
 async fn verify_credential(username: &str, password: &str) -> Result<bool, String> {
-    println!("username: {}; password: {}", username, get_hash(&password.to_string()));
     let post_info = CLIENT.post(Action::LogIn {
         username: username.to_string(),
         password: get_hash(&password.to_string()),
@@ -41,7 +51,10 @@ async fn verify_credential(username: &str, password: &str) -> Result<bool, Strin
     match post_info {
         Ok(info) => {
             match CLIENT.get_result(info).await {
-                Ok(ServerResponse::ResponseStatus { success }) => Ok(success),
+                Ok(ServerResponse::ResponseStatus { success }) => {
+                    if success { initialize_database(username) };
+                    Ok(success)
+                },
                 Err(error) => Err(format!("Error during login: {}", error)),
                 _ => Ok(false),
             }
@@ -52,7 +65,6 @@ async fn verify_credential(username: &str, password: &str) -> Result<bool, Strin
 
 #[tauri::command]
 async fn register(username: &str, password: &str) -> Result<bool, String> {
-    println!("username: {}; password: {}", username, get_hash(&password.to_string()));
     let post_info = CLIENT.post(Action::NewUser {
         username: username.to_string(),
         password: get_hash(&password.to_string()),
@@ -170,15 +182,42 @@ async fn get_user_public_key(username: &str) -> Result<Vec<([u8;32], [u8;32], Op
 }
 
 #[tauri::command]
-async fn send_message(username_receiver: &str, message: &str) -> Result<bool, String> {
-    // TODO use the double ratchet code to encrypt the message
-    todo!()
+async fn send_message(username_sender: &str, username_receiver: &str, message: &str) -> Result<(), String> {
+    // TODO add the E2EE and TCP over TLS communication
+    // run the following command to avoid the app to reload when interacting with the database
+    // (probably because we modify MESSAGE_DATABASE that make the app to reload): cargo tauri dev --no-watch
+
+    let mut database_guard = MESSAGE_DATABASE.lock().unwrap();
+    if let Some(mut database) = database_guard.take() {
+        database.insert_message(username_sender, username_receiver, message)
+            .expect("Message insertion in database raised an error");
+
+        *database_guard = Some(database);
+    } else {
+        // Should not happen, because database is initialized when log in
+        return Err("Database not initialized".to_string());
+    }
+    Ok(())
+}
+
+#[tauri::command]
+async fn load_messages(username_receiver: &str) -> Result<Vec<(String, String, String)>, String> {
+    let mut database_guard = MESSAGE_DATABASE.lock().unwrap();
+    if let Some(database) = database_guard.as_mut() {
+        let res = database.get_messages_with(username_receiver)
+            .expect("Message selection in database raised an error");
+
+        Ok(res)
+    } else {
+        // Should not happen, because database is initialized when log in
+        return Err("Database not initialized".to_string());
+    }
 }
 
 #[tokio::main]
 async fn main() -> Result<(), reqwest::Error> {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![verify_credential, register, log_out, get_all_users, get_messages, get_user_public_key, send_message])
+        .invoke_handler(tauri::generate_handler![verify_credential, register, log_out, get_all_users, get_messages, get_user_public_key, send_message, load_messages])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 

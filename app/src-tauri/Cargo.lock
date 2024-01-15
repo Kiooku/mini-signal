@@ -1914,6 +1914,7 @@ dependencies = [
  "hmac",
  "lazy_static",
  "num-bigint",
+ "once_cell",
  "rand 0.8.5",
  "rand_core 0.6.4",
  "reqwest",

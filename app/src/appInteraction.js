@@ -10,43 +10,6 @@ themeToggleBtn.addEventListener('click', () => {
     }
 });
 
-const sendBtn = document.getElementById("btnSend");
-const messageInput = document.getElementById("message-input")
-const messagesWrapper = document.getElementById("messages");
-
-sendBtn.addEventListener("click", () => {
-    if (messageInput.textContent.length > 0) {
-        let newMessage = document.createElement('div');
-        if (messagesWrapper.childElementCount - 1 === 0) {
-            newMessage.className = "container yours first";
-        } else {
-            newMessage.className = "container yours";
-        }
-
-        let lines = messageInput.innerText.split('\n');
-        lines.forEach(line => {
-            newMessage.appendChild(document.createTextNode(line));
-            newMessage.appendChild(document.createElement('br'));
-        });
-
-        newMessage.removeChild(newMessage.lastChild);
-
-        messagesWrapper.insertBefore(newMessage, messagesWrapper.children[messagesWrapper.childElementCount - 1]);
-        messageInput.textContent = "";
-        searchMessage();
-    }
-});
-
-function onUserSelected(userClicked) {
-    let userPreviouslySelected = document.getElementById("selected");
-    userPreviouslySelected.removeAttribute("id");
-    userClicked.setAttribute("id", "selected");
-    let currentFriendFirstLetter = document.getElementById("currentFriendFirstLetter");
-    currentFriendFirstLetter.textContent = userClicked.getElementsByTagName("span")[0].textContent;
-    let currentFriendName = document.getElementById("currentFriendName");
-    currentFriendName.textContent = userClicked.getElementsByTagName("p")[0].textContent;
-}
-
 function searchUser() {
     let searchBar = document.getElementById("searchBarUser");
     let filter = searchBar.value.toUpperCase();
@@ -154,9 +117,24 @@ const { appWindow } = window.__TAURI__.window;
 
 // TODO add the message gathering
 
-window.onload = function() {
+async function load_messages() {
+    let receiver = document.getElementById("selected").getElementsByTagName("p")[0].innerText;
+    let messages = await invoke("load_messages", {usernameReceiver: receiver});
+    messages.forEach(function (m) {
+        if (m[0] === localStorage.getItem('username')) {
+            create_new_message_div(true, m[2]);
+        } else {
+            create_new_message_div(false, m[2]);
+        }
+    })
+}
+
+window.onload = async function () {
     let username = localStorage.getItem('username');
     document.querySelector('.column.left header .circle .userFirstLetter').innerText = username.charAt(0).toUpperCase();
+
+    // Load the message already send
+    await load_messages();
 }
 
 appWindow.listen(TauriEvent.WINDOW_CLOSE_REQUESTED, async () => {
@@ -170,8 +148,6 @@ async function setUserList() {
     let userList = await invoke("get_all_users");
 
     userList.forEach(function(username) {
-        console.log(usernameList.childElementCount);
-
         let newUserDiv = document.createElement("div");
         newUserDiv.className = "user";
         if (usernameList.childElementCount === 2) { // Number of element without any user added
@@ -200,3 +176,58 @@ async function setUserList() {
 }
 
 setUserList()
+
+const sendBtn = document.getElementById("btnSend");
+const messageInput = document.getElementById("message-input")
+const messagesWrapper = document.getElementById("messages");
+
+function create_new_message_div(isYourMessage, current_message) {
+    let newMessage = document.createElement('div');
+    if (messagesWrapper.childElementCount - 1 === 0) {
+        newMessage.className = "container first";
+    } else {
+        newMessage.className = "container";
+    }
+
+    if (isYourMessage) {
+        newMessage.className += " yours";
+    }
+
+    let lines = current_message.split('\n');
+    lines.forEach(line => {
+        newMessage.appendChild(document.createTextNode(line));
+        newMessage.appendChild(document.createElement('br'));
+    });
+
+    newMessage.removeChild(newMessage.lastChild);
+
+    messagesWrapper.insertBefore(newMessage, messagesWrapper.children[messagesWrapper.childElementCount - 1]);
+}
+
+sendBtn.addEventListener("click", async () => {
+    if (messageInput.textContent.length > 0) {
+        let sender = localStorage.getItem('username');
+        let receiver = document.getElementById("selected").getElementsByTagName("p")[0].innerText;
+        let current_message = messageInput.innerText;
+        await invoke("send_message", { usernameSender: sender, usernameReceiver: receiver, message: current_message });
+        create_new_message_div(true, current_message);
+        messageInput.textContent = "";
+        searchMessage();
+    }
+});
+
+async function onUserSelected(userClicked) {
+    // Clean the message of the previous conversation, before loading the selected one
+    messagesWrapper.querySelectorAll(".container").forEach(messageContainer => {
+        messageContainer.remove();
+    });
+
+    let userPreviouslySelected = document.getElementById("selected");
+    userPreviouslySelected.removeAttribute("id");
+    userClicked.setAttribute("id", "selected");
+    let currentFriendFirstLetter = document.getElementById("currentFriendFirstLetter");
+    currentFriendFirstLetter.textContent = userClicked.getElementsByTagName("span")[0].textContent;
+    let currentFriendName = document.getElementById("currentFriendName");
+    currentFriendName.textContent = userClicked.getElementsByTagName("p")[0].textContent;
+    await load_messages();
+}
