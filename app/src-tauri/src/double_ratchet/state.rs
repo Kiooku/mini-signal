@@ -1,10 +1,10 @@
 use std::collections::HashMap;
-use x25519_dalek::{ReusableSecret, PublicKey as PublicKey25519};
+use x25519_dalek::{StaticSecret, PublicKey as PublicKey25519};
 
 // split dh_s to two variable, because EphemeralSecret does not implement the Copy trait
 #[derive(Clone)]
 pub struct State {
-    pub dh_s: Option<(ReusableSecret, PublicKey25519)>, // DH Ratchet key pair (the "sending" or "self" ratchet key)
+    pub dh_s: Option<(StaticSecret, PublicKey25519)>, // DH Ratchet key pair (the "sending" or "self" ratchet key)
     pub dh_r: Option<PublicKey25519>, // DH Ratchet public key (the "received" or "remote" key)
     pub rk: Option<[u8; 32]>, // 32-byte Root Key
     pub ck_s: Option<[u8; 32]>, // 32-byte Chain Keys for sending
@@ -35,5 +35,21 @@ impl State {
             n_r: 0, 
             pn: 0, 
             mkskipped: HashMap::new() }
+    }
+
+    pub fn from(dh_s: Option<(StaticSecret, PublicKey25519)>,
+                dh_r: Option<PublicKey25519>,
+                rk: Option<[u8; 32]>,
+                ck_s: Option<[u8; 32]>,
+                ck_r: Option<[u8; 32]>,
+                hk_s: Option<[u8; 32]>,
+                hk_r: Option<[u8; 32]>,
+                nhk_s: Option<[u8; 32]>,
+                nhk_r: Option<[u8; 32]>,
+                n_s: u8,
+                n_r: u8,
+                pn: u8,
+                mkskipped: HashMap<([u8; 32], u8), [u8; 32]>) -> Self {
+        State { dh_s, dh_r, rk, ck_s, ck_r, hk_s, hk_r, nhk_s, nhk_r, n_s, n_r, pn, mkskipped }
     }
 }

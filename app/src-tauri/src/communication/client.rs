@@ -34,8 +34,12 @@ impl Client {
         }
     }
 
+    pub fn from(name: String, communications: HashMap<String, (Vec<u8>, DoubleRatchetHE)>, keys: ClientKeyCollection) -> Self {
+        Client { name, communications, keys }
+    }
+
     pub fn get_server_keys(&self) -> ServerKeyCollection {
-        ServerKeyCollection::from(self.keys.get_ik(), self.keys.get_spk(), self.keys.get_opk_bundle(), self.keys.get_signature(), self.keys.get_verifying_key())
+        ServerKeyCollection::new(self.keys.get_ik(), self.keys.get_spk(), self.keys.get_opk_bundle(), self.keys.get_signature(), self.keys.get_verifying_key())
     }
 
     pub fn get_client_name(&self) -> String {
@@ -44,6 +48,10 @@ impl Client {
 
     pub fn get_keys(&self) -> &ClientKeyCollection {
         &self.keys
+    }
+
+    pub fn get_communication(&self) -> HashMap<String, (Vec<u8>, DoubleRatchetHE)> {
+        self.communications.clone()
     }
 
     /// Read all the messages sent by one user

@@ -4,7 +4,7 @@ use sha2::Sha256;
 use hmac::{Hmac, Mac};
 use hkdf::Hkdf;
 use rand_core::OsRng;
-use x25519_dalek::{ReusableSecret, PublicKey};
+use x25519_dalek::{StaticSecret, PublicKey};
 
 use super::aead::CryptoError;
 
@@ -17,12 +17,16 @@ type HmacSha256 = Hmac<Sha256>;
 
 #[derive(Clone)]
 pub struct DoubleRatchetHE {
-    state: State,
+    pub state: State,
 }
 
 impl DoubleRatchetHE {
     pub fn new() -> Self {
         DoubleRatchetHE { state: State::new() }
+    }
+
+    pub fn from(state: State) -> Self {
+        DoubleRatchetHE { state }
     }
 
     /// Initialize the sender Double Ratchet
@@ -47,10 +51,10 @@ impl DoubleRatchetHE {
     /// # Arguments
     /// 
     /// * `sk` (\[u8; 32\]): Shared Key *(X3DH shared secret)*
-    /// * `receiver_pair` (ReusableSecret, PublicKey): Receiver pair
+    /// * `receiver_pair` (StaticSecret, PublicKey): Receiver pair
     /// * `shared_hk` (\[u8; 32\]): Shared Header Keys *(HKDF derivation of the shared secret, info different from shared_nhk)*
     /// * `shared_nhk` (\[u8; 32\]): Shared Next Header Keys *(HKDF derivation of the shared secret, info different from shared_hk)*
-    pub fn init_receiver_he(&mut self, sk: [u8; 32], receiver_pair: (ReusableSecret, PublicKey), shared_hk: [u8; 32], shared_nhk: [u8; 32]) -> () {
+    pub fn init_receiver_he(&mut self, sk: [u8; 32], receiver_pair: (StaticSecret, PublicKey), shared_hk: [u8; 32], shared_nhk: [u8; 32]) -> () {
         self.state.dh_s = Some(receiver_pair);
         self.state.rk = Some(sk);
         self.state.nhk_s = Some(shared_nhk);
@@ -59,7 +63,7 @@ impl DoubleRatchetHE {
     
     /// Create and set a new Diffie-Hellman *(Curve25519)* key pair to `dh_s`
     fn generate_dh(&mut self) -> () {
-        let private_key: ReusableSecret = ReusableSecret::random_from_rng(OsRng);
+        let private_key: StaticSecret = StaticSecret::random_from_rng(OsRng);
         let public_key: PublicKey = PublicKey::from(&private_key);
         self.state.dh_s = Some((private_key, public_key));
     }
@@ -68,13 +72,13 @@ impl DoubleRatchetHE {
     /// 
     /// # Arguments
     /// 
-    /// * `dh_pair` ((EphemeralSecret, PublicKey)): Diffie-Hellman key pair
+    /// * `dh_pair` ((StaticSecret, PublicKey)): Diffie-Hellman key pair
     /// * `dh_pub` (PublicKey): Diffie-Hellman public key
     /// 
     /// # Output
     /// 
     /// * `dh_out` (SharedSecret): Diffie-Hellman output
-    fn dh(&self, dh_pair: &(ReusableSecret, PublicKey), dh_pub: PublicKey) -> [u8; 32] {
+    fn dh(&self, dh_pair: &(StaticSecret, PublicKey), dh_pub: PublicKey) -> [u8; 32] {
         *dh_pair.0.diffie_hellman(&dh_pub).as_bytes()
     }
 
@@ -280,14 +284,14 @@ impl DoubleRatchetHE {
     /// 
     /// # Arguments
     /// 
-    /// * `dh_pair` (&(ReusableSecret, PublicKey)): Diffie-Hellman key pair
+    /// * `dh_pair` (&(StaticSecret, PublicKey)): Diffie-Hellman key pair
     /// * `pn` (u8): Number of messages in previous sending chain
     /// * `n` (u8): Message numbers for sending and receiving
     /// 
     /// # Output
     /// 
     /// * `header` ((PublicKey, u8, u8)): Header
-    fn header(&self, dh_pair: &(ReusableSecret, PublicKey), pn: u8, n: u8) -> (PublicKey, u8, u8) {
+    fn header(&self, dh_pair: &(StaticSecret, PublicKey), pn: u8, n: u8) -> (PublicKey, u8, u8) {
         (dh_pair.1, pn, n)
     }
      

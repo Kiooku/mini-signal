@@ -12,7 +12,7 @@ use sha2::Sha256;
 use x25519_dalek::{SharedSecret, PublicKey, ReusableSecret, EphemeralSecret, StaticSecret};
 use ed25519_dalek::{Signature, SigningKey, Signer, VerifyingKey, Verifier};
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Debug)]
 pub enum X3DHError {
     SignatureInvalid,
 }
@@ -34,43 +34,60 @@ impl IdentityKey {
         IdentityKey { public_key: PublicKey::from(&private_key), private_key: private_key }
     }
 
+    pub fn from(public_key: PublicKey, private_key: StaticSecret) -> Self {
+        IdentityKey { public_key, private_key }
+    }
+
     pub fn get_public_key(&self) -> PublicKey {
         self.public_key
+    }
+
+    pub fn get_private_key(&self) -> StaticSecret {
+        self.private_key.clone()
     }
 }
 
 #[derive(Clone)]
 pub struct SignedPrekey {
     public_key: PublicKey,
-    private_key: ReusableSecret,
+    private_key: StaticSecret,
 }
 
 impl SignedPrekey {
     pub fn new() -> Self {
         let mut csprng = OsRng;
-        let private_key: ReusableSecret = ReusableSecret::random_from_rng(&mut csprng);
+        let private_key: StaticSecret = StaticSecret::random_from_rng(&mut csprng);
         SignedPrekey { public_key: PublicKey::from(&private_key), private_key: private_key }
+    }
+
+    pub fn from(public_key: PublicKey, private_key: StaticSecret) -> Self {
+        SignedPrekey { public_key, private_key }
     }
 
     pub fn get_public_key(&self) -> PublicKey {
         self.public_key
     }
 
-    pub fn get_private_key(&self) -> ReusableSecret {
+    pub fn get_private_key(&self) -> StaticSecret {
         self.private_key.clone()
     }
 }
 
+#[derive(Clone)]
 pub struct OneTimePrekey {
     public_key: PublicKey,
-    private_key: EphemeralSecret,
+    private_key: StaticSecret, // StaticSecret instead of EphemeralSecret, because we need to store it in the database
 }
 
 impl OneTimePrekey {
     pub fn new() -> Self {
         let mut csprng = OsRng;
-        let private_key: EphemeralSecret = EphemeralSecret::random_from_rng(&mut csprng);
+        let private_key: StaticSecret = StaticSecret::random_from_rng(&mut csprng);
         OneTimePrekey { public_key: PublicKey::from(&private_key), private_key: private_key }
+    }
+
+    pub fn from(public_key: PublicKey, private_key: StaticSecret) -> Self {
+        OneTimePrekey { public_key, private_key }
     }
 
     pub fn generate_opk_bundle(n: u8) -> Vec<OneTimePrekey> {
@@ -84,6 +101,10 @@ impl OneTimePrekey {
 
     pub fn get_public_key(&self) -> PublicKey {
         self.public_key
+    }
+
+    pub fn get_private_key(&self) -> StaticSecret {
+        self.private_key.clone()
     }
 }
 

@@ -1,6 +1,6 @@
 use crate::x3dh::x3dh::{IdentityKey, SignedPrekey, OneTimePrekey,  x3dh_sender, x3dh_receiver, create_prekey_signature, create_prekey_bundle, X3DHError, get_ad};
 use ed25519_dalek::{Signature, VerifyingKey};
-use x25519_dalek::{PublicKey, ReusableSecret};
+use x25519_dalek::{PublicKey, StaticSecret};
 use std::fmt;
 
 use super::message::Message;
@@ -108,7 +108,7 @@ impl ClientKeyCollection {
         self.spk.get_public_key()
     }
 
-    pub fn get_spk_private(&self) -> ReusableSecret {
+    pub fn get_spk_private(&self) -> StaticSecret {
         self.spk.get_private_key()
     }
 
@@ -134,9 +134,13 @@ impl ClientKeyCollection {
 }
 
 impl ServerKeyCollection {
-    pub fn from(ik: IdentityKey, spk: SignedPrekey, opk_bundle: &Vec<OneTimePrekey>, signature: Signature, verifying_key: VerifyingKey) -> Self {
+    pub fn new(ik: IdentityKey, spk: SignedPrekey, opk_bundle: &Vec<OneTimePrekey>, signature: Signature, verifying_key: VerifyingKey) -> Self {
         let (ik_server, spk_server, opk_bundle_server, signature_server, verifying_key_server): (PublicKey, PublicKey, Vec<PublicKey>, Signature, VerifyingKey) = create_prekey_bundle(&ik, &spk, opk_bundle, signature, verifying_key);
         ServerKeyCollection { ik: ik_server, spk: spk_server, opk_bundle: opk_bundle_server, signature: signature_server, verifying_key: verifying_key_server }
+    }
+
+    pub fn from(ik: PublicKey, spk: PublicKey, opk_bundle: Vec<PublicKey>, signature: Signature, verifying_key: VerifyingKey) -> Self {
+        ServerKeyCollection { ik, spk, opk_bundle, signature, verifying_key }
     }
 
     pub fn get_ik(&self) -> PublicKey {

@@ -67,6 +67,7 @@ The server deal with three sqlite databases. I used [`rusqlite`](https://github.
 
 ### Client
 
+Three database on the client side (TODO)
 #### TODO
 
 **Note for later**: `overflow-anchor: auto` and `backdrop-filter: saturate(120%) blur(14px);` not supported on Tauri 
