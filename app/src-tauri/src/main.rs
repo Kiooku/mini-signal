@@ -14,17 +14,18 @@ use serde::{Deserialize, Serialize};
 use hash::get_hash;
 use tcp_client::{MiniSignalClient, Action, ServerResponse};
 use std::sync::{Arc, Mutex};
-use std::thread::current;
 use ed25519_dalek::ed25519::SignatureBytes;
 use ed25519_dalek::{Signature, VerifyingKey};
 use once_cell::sync::Lazy;
-use tauri::api::dialog::message;
 use x25519_dalek::PublicKey;
 use crate::communication::client::Client;
 use crate::communication::key_collection::ServerKeyCollection;
+use crate::communication::message::{Ciphertext, HeaderHE};
 use crate::database::double_ratchet_database::DoubleRatchetDatabase;
 use crate::database::message_database::MessageDatabase;
-use crate::x3dh::x3dh::IdentityKey;
+
+// run the following command to avoid the app to reload when interacting with the database: cargo tauri dev --no-watch
+// (probably because we modify MESSAGE_DATABASE that make the app to reload when it's on the dev mode)
 
 lazy_static! {
     static ref TCP_CLIENT: MiniSignalClient = {
@@ -226,19 +227,18 @@ async fn get_user_public_key(username: &str) -> Result<ServerKeyCollection, Stri
     }
 }
 
+
 #[tauri::command]
 async fn send_message(username_sender: &str, username_receiver: &str, message: &str) -> Result<(), String> {
-    // TODO add the E2EE and TCP over TLS communication
-    // run the following command to avoid the app to reload when interacting with the database: cargo tauri dev --no-watch
-    // (probably because we modify MESSAGE_DATABASE that make the app to reload when it's on the dev mode)
-
     // Encrypt the message using double ratchet
     let receiver_public_keys: ServerKeyCollection = get_user_public_key(username_receiver).await.unwrap();
-    let mut double_ratchet_client_guard = DOUBLE_RATCHET_CLIENT.lock().unwrap();
-    let double_ratchet_res = double_ratchet_client_guard.as_mut().unwrap().send_message(&username_receiver.to_string(), message.as_bytes(), &receiver_public_keys).unwrap();
-    println!("{:?}", double_ratchet_res.1);
-    /*
-    // WIP
+    let double_ratchet_res;
+
+    {
+        let mut double_ratchet_client_guard = DOUBLE_RATCHET_CLIENT.lock().unwrap();
+        double_ratchet_res = double_ratchet_client_guard.as_mut().unwrap().send_message(&username_receiver.to_string(), message.as_bytes(), &receiver_public_keys).unwrap();
+    }
+
     let mut current_ek: Option<[u8;32]> = None;
     let mut current_opk: Option<[u8;32]> = None;
     if let Some((ek, opk)) = double_ratchet_res.0 {
@@ -246,7 +246,7 @@ async fn send_message(username_sender: &str, username_receiver: &str, message: &
         current_opk = opk.map(|pk| pk.to_bytes());
     }
     let post_info = TCP_CLIENT.post(Action::SendMessage {
-        username_receiver: username_sender.to_string(),
+        username_receiver: username_receiver.to_string(),
         header_encrypted: double_ratchet_res.1.0.get_ciphertext(),
         header_nonce: double_ratchet_res.1.0.get_nonce(),
         ciphertext: double_ratchet_res.1.1.get_ciphertext(),
@@ -254,8 +254,23 @@ async fn send_message(username_sender: &str, username_receiver: &str, message: &
         ek_sender: current_ek,
         opk_used: current_opk
     }).await;
-    println!("{:?}", double_ratchet_res.1);
-     */
+
+    match post_info {
+        Ok(info) => {
+            match TCP_CLIENT.get_result(info).await {
+                Ok(ServerResponse::ResponseStatus { success }) => {
+                    if !success {
+                        //todo!();
+                        println!("TODO, implement an error in the success when sending a message: {}", success);
+                        // Signal the user that the message has not been sent (modify the database to store a bool if the message has been sent or not)
+                    }
+                },
+                Err(error) => return Err(format!("Error when sending message: {}", error)),
+                Ok(server_response) => return Err(format!("Error when collecting sending message status (bad server response): {:?}", server_response)),
+            }
+        },
+        Err(error) => return Err(format!("Error when sending messages (post_info): {}", error)),
+    };
 
     // Store the message in the client database
     let mut message_database_guard = MESSAGE_DATABASE.lock().unwrap();
