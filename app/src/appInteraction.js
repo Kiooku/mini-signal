@@ -137,7 +137,20 @@ window.onload = async function () {
     await load_messages();
 }
 
+let interval_get_message = setInterval(get_messages, 5000); // Call each second
+
+async function get_messages() {
+    let messages = await invoke("get_messages", { usernameReceiver: localStorage.getItem('username') });
+    if (messages !== null) {
+        messages.forEach(function (m) {
+            console.log(m);
+            create_new_message_div(false, m)
+        })
+    }
+}
+
 appWindow.listen(TauriEvent.WINDOW_CLOSE_REQUESTED, async () => {
+    clearInterval(interval_get_message);
     await invoke("log_out");
     appWindow.close();
 });

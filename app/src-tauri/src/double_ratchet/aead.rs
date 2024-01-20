@@ -55,6 +55,8 @@ pub fn decrypt(mk: [u8; 32], ciphertext: &Vec<u8>, nonce: &Vec<u8>, ad: &[u8]) -
         aad: ad,
     };
 
+    println!("{:?}", nonce);
+    println!("{:?}", nonce.len());
     let plaintext = cipher
         .decrypt(&GenericArray::clone_from_slice(&nonce), payload)
         .map_err(|_| CryptoError::DecryptionError)?;

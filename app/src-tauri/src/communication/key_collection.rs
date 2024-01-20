@@ -7,6 +7,7 @@ use super::message::Message;
 
 const BASIC_AMOUNT_OF_OPK: u8 = 50; // Change base on the average user behaviour
 
+#[derive(Debug)]
 pub enum KeyError {
     EphemeralKeyAbsent,
     IdentityKeyAbsent,

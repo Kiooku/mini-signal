@@ -8,6 +8,7 @@ mod double_ratchet;
 mod x3dh;
 mod database;
 
+use std::env;
 use lazy_static::lazy_static;
 use tauri::Manager;
 use serde::{Deserialize, Serialize};
@@ -20,7 +21,7 @@ use once_cell::sync::Lazy;
 use x25519_dalek::PublicKey;
 use crate::communication::client::Client;
 use crate::communication::key_collection::ServerKeyCollection;
-use crate::communication::message::{Ciphertext, HeaderHE};
+use crate::communication::message::{Ciphertext, HeaderHE, Message};
 use crate::database::double_ratchet_database::DoubleRatchetDatabase;
 use crate::database::message_database::MessageDatabase;
 
@@ -155,9 +156,23 @@ async fn register(username: &str, password: &str) -> Result<bool, String> {
 
 #[tauri::command]
 async fn log_out() -> Result<(), String> {
+    {
+        let mut double_ratchet_database_guard = DOUBLE_RATCHET_DATABASE.lock().unwrap();
+        if let Some(mut double_ratchet_database) = double_ratchet_database_guard.take() {
+            let mut double_ratchet_client_guard = DOUBLE_RATCHET_CLIENT.lock().unwrap();
+            let current_client = double_ratchet_client_guard.as_ref().unwrap();
+            double_ratchet_database.update_client(current_client)
+                .expect("Double ratchet collection raised an error");
+
+            *double_ratchet_database_guard = Some(double_ratchet_database);
+        } else {
+            // Should not happen, because database is initialized when log in
+            return Err("Double ratchet database not initialized".to_string());
+        }
+    }
+
     let result = TCP_CLIENT.post(Action::LogOut).await;
 
-    // TODO store the data in the client database (double_ratchet)
     match result {
         Ok(_) => Ok(()),
         Err(error) => Err(format!("{}", error)), // TODO cancel the close event and say to try again
@@ -181,7 +196,7 @@ async fn get_all_users() -> Result<Vec<String>, String> {
 }
 
 #[tauri::command]
-async fn get_messages() -> Result<Option<Vec<(String, Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>, Option<[u8;32]>, Option<[u8;32]>)>>, String> {
+async fn get_messages(username_receiver: &str) -> Result<Option<Vec<String>>, String> {
     let post_info = TCP_CLIENT.post(Action::GetMessages).await;
 
     match post_info {
@@ -189,7 +204,39 @@ async fn get_messages() -> Result<Option<Vec<(String, Vec<u8>, Vec<u8>, Vec<u8>,
             match TCP_CLIENT.get_result(info).await {
                 Ok(ServerResponse::Messages { success, new_messages, messages }) => {
                     if success && new_messages {
-                        return Ok(Some(messages.unwrap()))
+                        let mut double_ratchet_client_guard = DOUBLE_RATCHET_CLIENT.lock().unwrap();
+                        let mut plaintext_messages: Vec<String> = Vec::new();
+                        { // Acquire the lock
+                            for message in messages.unwrap() {
+                                let current_ek = message.5.map(PublicKey::from);
+                                let current_opk = message.6.map(PublicKey::from);
+                                let current_ik_sender = message.7.map(PublicKey::from);
+                                println!("{:?}", current_ik_sender);
+                                let current_message: Message = Message::new(HeaderHE::new(message.1, message.2), Ciphertext::new(message.3, message.4), current_ek, current_opk);
+                                /*let mut double_ratchet_client_guard = DOUBLE_RATCHET_CLIENT.lock().unwrap();
+                                let double_ratchet_res;
+                                if double_ratchet_client_guard.as_mut().unwrap().get_communication().contains_key(&message.0) {
+                                    double_ratchet_res = double_ratchet_client_guard.as_mut().unwrap().read_messages(&message.0, None, vec![current_message]);
+                                } else {
+                                    let sender_public_keys: ServerKeyCollection;
+                                    {
+                                        sender_public_keys = get_user_public_key(&message.0).await.unwrap();
+                                    }
+                                    double_ratchet_res = double_ratchet_client_guard.as_mut().unwrap().read_messages(&message.0, Some(sender_public_keys.get_ik()), vec![current_message]);
+                                }*/
+                                println!("{:?}", current_message);
+                                let double_ratchet_res = double_ratchet_client_guard.as_mut().unwrap().read_messages(&message.0, current_ik_sender, vec![current_message]);
+                                println!("{:?}", double_ratchet_res);
+                                let temp = double_ratchet_res.unwrap();
+                                println!("{:?}", temp);
+                                let current_plaintext_message: &Vec<u8> = temp.get(0).unwrap();
+                                plaintext_messages.push(String::from_utf8_lossy(&current_plaintext_message).to_string());
+                                // https://stackoverflow.com/questions/41034635/how-do-i-convert-between-string-str-vecu8-and-u8 (Good explanation for every kind of str conversion)
+                                store_message_in_database(&message.0, username_receiver, std::str::from_utf8(current_plaintext_message).unwrap()).expect("Error when inserting information in the message database");
+                            }
+                        } // Release the lock
+
+                        return Ok(Some(plaintext_messages))
                     }
                     Ok(None)
                 },
@@ -234,10 +281,15 @@ async fn send_message(username_sender: &str, username_receiver: &str, message: &
     let receiver_public_keys: ServerKeyCollection = get_user_public_key(username_receiver).await.unwrap();
     let double_ratchet_res;
 
-    {
+    let mut current_ik_sender: Option<[u8;32]> = None;
+    { // Acquire the lock
         let mut double_ratchet_client_guard = DOUBLE_RATCHET_CLIENT.lock().unwrap();
+        if !double_ratchet_client_guard.as_mut().unwrap().get_communication().contains_key(username_receiver) {
+            current_ik_sender = Some(double_ratchet_client_guard.as_mut().unwrap().get_server_keys().get_ik().to_bytes());
+        }
         double_ratchet_res = double_ratchet_client_guard.as_mut().unwrap().send_message(&username_receiver.to_string(), message.as_bytes(), &receiver_public_keys).unwrap();
-    }
+
+    } // Release the lock
 
     let mut current_ek: Option<[u8;32]> = None;
     let mut current_opk: Option<[u8;32]> = None;
@@ -245,14 +297,16 @@ async fn send_message(username_sender: &str, username_receiver: &str, message: &
         current_ek = Some(ek.to_bytes());
         current_opk = opk.map(|pk| pk.to_bytes());
     }
+
     let post_info = TCP_CLIENT.post(Action::SendMessage {
         username_receiver: username_receiver.to_string(),
         header_encrypted: double_ratchet_res.1.0.get_ciphertext(),
         header_nonce: double_ratchet_res.1.0.get_nonce(),
         ciphertext: double_ratchet_res.1.1.get_ciphertext(),
-        nonce: double_ratchet_res.1.1.get_ciphertext(),
+        nonce: double_ratchet_res.1.1.get_nonce(),
         ek_sender: current_ek,
-        opk_used: current_opk
+        opk_used: current_opk,
+        ik_sender: current_ik_sender
     }).await;
 
     match post_info {
@@ -273,6 +327,7 @@ async fn send_message(username_sender: &str, username_receiver: &str, message: &
     };
 
     // Store the message in the client database
+    /*
     let mut message_database_guard = MESSAGE_DATABASE.lock().unwrap();
     if let Some(mut message_database) = message_database_guard.take() {
         message_database.insert_message(username_sender, username_receiver, message)
@@ -282,10 +337,25 @@ async fn send_message(username_sender: &str, username_receiver: &str, message: &
     } else {
         // Should not happen, because database is initialized when log in
         return Err("Database not initialized".to_string());
-    }
+    }*/
+    store_message_in_database(username_sender, username_receiver, message).expect("Error when inserting information in the message database");
 
 
     Ok(())
+}
+
+fn store_message_in_database(username_sender: &str, username_receiver: &str, message: &str) -> Result<(), String> {
+    let mut message_database_guard = MESSAGE_DATABASE.lock().unwrap();
+    if let Some(mut message_database) = message_database_guard.take() {
+        message_database.insert_message(username_sender, username_receiver, message)
+            .expect("Message insertion in database raised an error");
+
+        *message_database_guard = Some(message_database);
+        Ok(())
+    } else {
+        // Should not happen, because database is initialized when log in
+        return Err("Database not initialized".to_string());
+    }
 }
 
 #[tauri::command]
@@ -304,6 +374,7 @@ async fn load_messages(username_receiver: &str) -> Result<Vec<(String, String, S
 
 #[tokio::main]
 async fn main() -> Result<(), reqwest::Error> {
+    //env::set_var("RUST_BACKTRACE", "1");
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![verify_credential, register, log_out, get_all_users, get_messages, send_message, load_messages])
         .run(tauri::generate_context!())

@@ -313,7 +313,7 @@ impl DoubleRatchetDatabase {
                               client_keys.get_verifying_key())
     }
 
-    pub fn update_client(&mut self, client: Client) -> Result<()> {
+    pub fn update_client(&mut self, client: &Client) -> Result<()> {
         for (interlocutor, (ad, interlocutor_double_ratchet)) in client.get_communication() {
             self.insert_double_ratchet_information(interlocutor.clone(), ad, interlocutor_double_ratchet.state).expect(&format!("Error when inserting {} double ratchet information", interlocutor));
         }

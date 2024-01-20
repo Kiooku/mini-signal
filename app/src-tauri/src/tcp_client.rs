@@ -40,7 +40,8 @@ pub enum Action {
         ciphertext: Vec<u8>,
         nonce: Vec<u8>,
         ek_sender: Option<[u8;32]>,
-        opk_used: Option<[u8;32]>
+        opk_used: Option<[u8;32]>,
+        ik_sender: Option<[u8;32]>
     },
 }
 
@@ -58,7 +59,7 @@ pub enum ServerResponse {
     Messages {
         success: bool,
         new_messages: bool,
-        messages: Option<Vec<(String, Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>, Option<[u8;32]>, Option<[u8;32]>)>>,
+        messages: Option<Vec<(String, Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>, Option<[u8;32]>, Option<[u8;32]>, Option<[u8;32]>)>>,
     },
 }
 

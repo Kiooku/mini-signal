@@ -2,7 +2,6 @@ use x25519_dalek::PublicKey;
 
 #[derive(Clone, Debug)]
 pub struct Message {
-    username: String,
     header_he: HeaderHE, 
     ciphertext: Ciphertext, 
     ek_sender: Option<PublicKey>, 
@@ -10,12 +9,8 @@ pub struct Message {
 }
 
 impl Message {
-    pub fn new(username: String, header_he: HeaderHE, ciphertext: Ciphertext, ek_sender: Option<PublicKey>, opk_used: Option<PublicKey>) -> Self {
-        Message { username: username, header_he: header_he, ciphertext: ciphertext, ek_sender: ek_sender, opk_used: opk_used}
-    }
-
-    pub fn get_username(&self) -> String {
-        self.username.clone()
+    pub fn new(header_he: HeaderHE, ciphertext: Ciphertext, ek_sender: Option<PublicKey>, opk_used: Option<PublicKey>) -> Self {
+        Message { header_he: header_he, ciphertext: ciphertext, ek_sender: ek_sender, opk_used: opk_used}
     }
 
     pub fn get_header_he(&self) -> HeaderHE {
