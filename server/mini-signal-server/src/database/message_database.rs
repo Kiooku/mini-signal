@@ -17,14 +17,15 @@ impl MessageDatabase {
             ciphertext BLOB NOT NULL,
             ciphertext_nonce BLOB NOT NULL,
             ek_sender BLOB,
-            opk_used BLOB
+            opk_used BLOB,
+            ik_sender BLOB
         )", ())?;
 
         Ok(MessageDatabase { conn })
     }
 
-    pub fn get_all_user_messages(&self, username_receiver: &String) -> Result<Vec<(i64, String, Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>, Option<[u8;32]>, Option<[u8;32]>)>> {
-        let mut stmt: Statement = self.conn.prepare("SELECT message_id, username_sender, header_encrypted, header_nonce, ciphertext, ciphertext_nonce, ek_sender, opk_used FROM messages WHERE username_receiver=?")?;
+    pub fn get_all_user_messages(&self, username_receiver: &String) -> Result<Vec<(i64, String, Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>, Option<[u8;32]>, Option<[u8;32]>, Option<[u8;32]>)>> {
+        let mut stmt: Statement = self.conn.prepare("SELECT message_id, username_sender, header_encrypted, header_nonce, ciphertext, ciphertext_nonce, ek_sender, opk_used, ik_sender FROM messages WHERE username_receiver=?")?;
 
         let mut result = stmt.query_map(&[username_receiver], |row| {
             let message_id: i64 = row.get(0)?;
@@ -33,14 +34,14 @@ impl MessageDatabase {
             let header_nonce: Vec<u8> = row.get(3)?;
             let ciphertext: Vec<u8> = row.get(4)?;
             let nonce: Vec<u8> = row.get(5)?;
-            //let ek_sender: Option<[u8;32]> = if row.get::<usize, [u8;32]>(6).is_ok() { Some(row.get::<usize, [u8;32]>(6).unwrap()) } else { None };
             let ek_sender: Option<[u8;32]> = if row.get::<usize, [u8;32]>(6).is_ok() { Some(row.get(6).unwrap()) } else { None };
             let opk_used: Option<[u8;32]> = if row.get::<usize, [u8;32]>(7).is_ok() { Some(row.get(7).unwrap()) } else { None };
+            let ik_sender: Option<[u8;32]> = if row.get::<usize, [u8;32]>(8).is_ok() { Some(row.get(8).unwrap()) } else { None };
 
-            Ok((message_id, username_sender, header_encrypted, header_nonce, ciphertext, nonce, ek_sender, opk_used))
+            Ok((message_id, username_sender, header_encrypted, header_nonce, ciphertext, nonce, ek_sender, opk_used, ik_sender))
         })?;
 
-        let mut messages: Vec<(i64, String, Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>, Option<[u8;32]>, Option<[u8;32]>)> = Vec::new();
+        let mut messages: Vec<(i64, String, Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>, Option<[u8;32]>, Option<[u8;32]>, Option<[u8;32]>)> = Vec::new();
 
         while let Some(result) = result.next() {
             messages.push(result.unwrap());
@@ -52,15 +53,15 @@ impl MessageDatabase {
     pub fn add_message(&mut self, username_receiver: &String, username_sender: &String,
                        header_encrypted: Vec<u8>, header_nonce: Vec<u8>,
                        ciphertext: Vec<u8>, nonce: Vec<u8>,
-                       ek_sender: Option<[u8;32]>, opk_used: Option<[u8;32]>) -> Result<()> {
-        println!("We are going to insert a message");
+                       ek_sender: Option<[u8;32]>, opk_used: Option<[u8;32]>, ik_sender: Option<[u8;32]>) -> Result<()> {
+
         let tx: Transaction = self.conn.transaction()?;
 
         tx.execute("INSERT INTO messages
-        (username_receiver, username_sender, header_encrypted, header_nonce, ciphertext, ciphertext_nonce, ek_sender, opk_used)\
-        VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
-                   (username_receiver, username_sender, header_encrypted, header_nonce, ciphertext, nonce, ek_sender, opk_used))?;
-        println!("Message is normally inserted");
+        (username_receiver, username_sender, header_encrypted, header_nonce, ciphertext, ciphertext_nonce, ek_sender, opk_used, ik_sender)\
+        VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
+                   (username_receiver, username_sender, header_encrypted, header_nonce, ciphertext, nonce, ek_sender, opk_used, ik_sender))?;
+
         tx.commit()
     }
 

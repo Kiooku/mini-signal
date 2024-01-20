@@ -133,6 +133,14 @@ window.onload = async function () {
     let username = localStorage.getItem('username');
     document.querySelector('.column.left header .circle .userFirstLetter').innerText = username.charAt(0).toUpperCase();
 
+    let userPreviouslySelected = document.getElementById("selected");
+    if (userPreviouslySelected) {
+        let currentFriendFirstLetter = document.getElementById("currentFriendFirstLetter");
+        currentFriendFirstLetter.textContent = userPreviouslySelected.getElementsByTagName("span")[0].textContent;
+        let currentFriendName = document.getElementById("currentFriendName");
+        currentFriendName.textContent = userPreviouslySelected.getElementsByTagName("p")[0].textContent;
+    }
+
     // Load the message already send
     await load_messages();
 }
@@ -143,7 +151,6 @@ async function get_messages() {
     let messages = await invoke("get_messages", { usernameReceiver: localStorage.getItem('username') });
     if (messages !== null) {
         messages.forEach(function (m) {
-            console.log(m);
             create_new_message_div(false, m)
         })
     }

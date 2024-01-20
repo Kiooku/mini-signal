@@ -62,7 +62,8 @@ enum Action {
         ciphertext: Vec<u8>,
         nonce: Vec<u8>,
         ek_sender: Option<[u8;32]>,
-        opk_used: Option<[u8;32]>
+        opk_used: Option<[u8;32]>,
+        ik_sender: Option<[u8;32]>
     },
 }
 // Do we need a LogOut or the server can now if the host is not reachable (try twice and if not, then wait the next connection)
@@ -81,7 +82,7 @@ enum Response {
     Messages {
         success: bool,
         new_messages: bool,
-        messages: Option<Vec<(String, Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>, Option<[u8;32]>, Option<[u8;32]>)>>,
+        messages: Option<Vec<(String, Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>, Option<[u8;32]>, Option<[u8;32]>, Option<[u8;32]>)>>,
     },
 }
 
@@ -91,16 +92,6 @@ type Db = Arc<Mutex<HashMap<String, String>>>;
 async fn main() {
     // Server
     let db = Arc::new(Mutex::new(HashMap::new()));
-    /*
-    let heartbeat = warp::path("heartbeat")
-        .and(warp::ws())
-        .map(move |ws: warp::ws::Ws| {
-            let db = db.clone();
-            ws.on_upgrade(move |socket| async move {
-                // Handle the WebSocket connection
-                handle_heartbeat(socket, db).await;
-            })
-        });*/
 
     let endpoint = warp::post()
         .and(warp::body::json())
@@ -109,49 +100,18 @@ async fn main() {
 
     println!("Server started");
 
-    //let routes = endpoint.or(heartbeat);
-
     warp::serve(endpoint)
         .tls()
         .cert_path("src/keys/cert.pem")
         .key_path("src/keys/key.rsa")
         .run(([127, 0, 0, 1], 6379)).await;
 }
-/*
-async fn handle_heartbeat(socket: WebSocket, db: Db) {
-    // Periodically send a heartbeat message and check for client responses
-    let (mut tx, mut rx) = socket.split();
-    let heartbeat_interval = Duration::from_secs(10);
 
-    // Clone Arc<Mutex<HashMap<String, String>>> for use in the loop
-    let db_clone = db.clone();
-
-    tokio::spawn(async move {
-        loop {
-            tokio::time::sleep(heartbeat_interval).await;
-
-            // Try sending a heartbeat message
-            if let Err(_) = tx.send(warp::ws::Message::ping(Vec::new())).await {
-                // If sending fails, assume the client has disconnected
-                // Perform cleanup or logging as needed
-
-                // Example: Remove user from the HashMap
-                //let mut db = db_clone.lock().unwrap();
-                //db.retain(|_, v| v != &rx.addr().unwrap().ip().to_string());
-                println!("User seems to be disconnected");
-                break;
-            }
-        }
-    });
-}
-*/
 fn action_handler(request: Action, ip_addr: Option<SocketAddr>, db: &Db) -> Response {
     println!("Get a request: {:?}", request);
     println!("Ip Address: {:?} ({:?})", ip_addr.unwrap().ip(), ip_addr.unwrap());
     println!("{:?}", db);
-    // TODO Multiple database (passwords, X3DH keys, messages, user online) [sqlite, sqlite, sqlite, tokio Arc]
 
-    // TODO check if my database can handle multiple connection
     let mut password_db: PasswordDatabase = match PasswordDatabase::new() {
         Ok(res) => res,
         Err(error) => panic!("{}", error),
@@ -184,7 +144,6 @@ fn action_handler(request: Action, ip_addr: Option<SocketAddr>, db: &Db) -> Resp
             if db.contains_key(&ip_addr.unwrap().to_string()) {
                 return Response::ResponseStatus { success: false }
             }
-            println!("{}", password);
             let password_valid: bool = match password_db.check_password(&username, password) {
                 Ok(res) => res,
                 Err(error) => panic!("{}", error),
@@ -216,11 +175,11 @@ fn action_handler(request: Action, ip_addr: Option<SocketAddr>, db: &Db) -> Resp
             let db = db.lock().unwrap();
             if db.contains_key(&ip_addr.unwrap().to_string()) {
                 let current_username = db.get(&ip_addr.unwrap().to_string()).unwrap();
-                let messages: Vec<(i64, String, Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>, Option<[u8;32]>, Option<[u8;32]>)> = message_db.get_all_user_messages(&current_username.clone()).unwrap();
+                let messages: Vec<(i64, String, Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>, Option<[u8;32]>, Option<[u8;32]>, Option<[u8;32]>)> = message_db.get_all_user_messages(&current_username.clone()).unwrap();
                 if messages.len() > 0 {
-                    let current_user_messages: Vec<(String, Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>, Option<[u8;32]>, Option<[u8;32]>)> = messages.clone()
+                    let current_user_messages: Vec<(String, Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>, Option<[u8;32]>, Option<[u8;32]>, Option<[u8;32]>)> = messages.clone()
                         .into_iter()
-                        .map(|(id, s, he, he_n, c, c_n, ek, opk)| (s, he, he_n, c, c_n, ek, opk))
+                        .map(|(id, s, he, he_n, c, c_n, ek, opk, ik_sender)| (s, he, he_n, c, c_n, ek, opk, ik_sender))
                         .collect();
                     for message in messages.clone() {
                         message_db.delete_message(message.0).expect("Error delete message in message_db");
@@ -294,11 +253,10 @@ fn action_handler(request: Action, ip_addr: Option<SocketAddr>, db: &Db) -> Resp
                     Err(_) => return Response::ResponseStatus { success: false }
                 }
             }
-            // TODO handle in a better way
+
             Response::ResponseStatus { success: false }
         },
-        Action::SendMessage { username_receiver, header_encrypted, header_nonce, ciphertext, nonce, ek_sender, opk_used} => {
-            // TODO store message in the database if the user is offline, otherwise send to the user and check if the user has received the message
+        Action::SendMessage { username_receiver, header_encrypted, header_nonce, ciphertext, nonce, ek_sender, opk_used, ik_sender} => {
             let db = db.lock().unwrap();
             if db.contains_key(&ip_addr.unwrap().to_string()) {
                 println!("The user is connected");
@@ -306,9 +264,10 @@ fn action_handler(request: Action, ip_addr: Option<SocketAddr>, db: &Db) -> Resp
                 if x3dh_db.user_exist(&username_receiver).unwrap() && &username_receiver != sender_username {
                     println!("The user exist in the X3DH database");
                     // TODO potential upgrade: send to the user directly when she/he's connected and check that he/she received it
-                    message_db.add_message(&username_receiver, sender_username, header_encrypted, header_nonce, ciphertext, nonce, ek_sender, opk_used).expect("Add message to database failed");
+                    message_db.add_message(&username_receiver, sender_username, header_encrypted, header_nonce, ciphertext, nonce, ek_sender, opk_used, ik_sender).expect("Add message to database failed");
                     return Response::ResponseStatus { success: true }
                     /*
+                    // Code snippet to upgrade the system later
                     if !db.values().any(|username| username == &username_receiver) {
                         message_db.add_message(&username_receiver, sender_username, header_encrypted, header_nonce, ciphertext, nonce, ek_sender, opk_used).expect("Add message to database failed");
                         return Response::ResponseStatus { success: true }
@@ -331,101 +290,3 @@ struct Request {
     #[serde(flatten)]
     action: Action,
 }
-
-/*
- Action::SendMessage {
-    username_receiver,
-    header_encrypted,
-    header_nonce,
-    ciphertext,
-    nonce,
-    ek_sender,
-    opk_used,
-} => {
-    let db = db.lock().unwrap();
-    if db.contains_key(&ip_addr.unwrap().to_string()) {
-        println!("The user is connected");
-        let sender_username = db.get(&ip_addr.unwrap().to_string()).unwrap();
-        if x3dh_db.user_exist(&username_receiver).unwrap() && &username_receiver != sender_username {
-            println!("The user exists in the X3DH database");
-            if !db.values().any(|username| username == &username_receiver) {
-                message_db
-                    .add_message(
-                        &username_receiver,
-                        sender_username,
-                        header_encrypted,
-                        header_nonce,
-                        ciphertext,
-                        nonce,
-                        ek_sender,
-                        opk_used,
-                    )
-                    .expect("Add message to the database failed");
-
-                Response::ResponseStatus { success: true }
-            } else {
-                // User is online, attempt to send a WebSocket message
-                match send_websocket_message(&username_receiver, &message_db, &header_encrypted, &header_nonce, &ciphertext, &nonce, &ek_sender, &opk_used).await {
-                    Ok(_) => Response::ResponseStatus { success: true },
-                    Err(err) => {
-                        eprintln!("Error sending message to online user: {}", err);
-                        Response::ResponseStatus { success: false }
-                    }
-                }
-            }
-        }
-    }
-    Response::ResponseStatus { success: false }
-}
-
-// Function to send a WebSocket message to an online user
-async fn send_websocket_message(
-    username: &str,
-    message_db: &MessageDatabase,
-    header_encrypted: &[u8],
-    header_nonce: &[u8],
-    ciphertext: &[u8],
-    nonce: &[u8],
-    ek_sender: &Option<[u8; 32]>,
-    opk_used: &Option<[u8; 32]>,
-) -> Result<(), Box<dyn std::error::Error>> {
-    // Assuming you have a function to obtain the WebSocket of a connected user
-    if let Some(websocket) = get_user_websocket(username).await {
-        // Construct the WebSocket message and send it
-        let message = format!(
-            r#"{{"action": "SendMessage", "username_sender": "{}", "header_encrypted": {:?}, "header_nonce": {:?}, "ciphertext": {:?}, "nonce": {:?}, "ek_sender": {:?}, "opk_used": {:?}}}"#,
-            username,
-            header_encrypted,
-            header_nonce,
-            ciphertext,
-            nonce,
-            ek_sender,
-            opk_used
-        );
-        websocket.send(message).await?;
-    } else {
-        // User is not online
-        // You can choose to handle this case differently or log the information
-    }
-
-    Ok(())
-}
-
-// Function to obtain the WebSocket of a connected user
-async fn get_user_websocket(username: &str) -> Option<WebSocket> {
-    // You need a way to associate each WebSocket with a specific user
-    // This is a placeholder, and you'll need to implement your own logic
-    // to find the WebSocket associated with the given username
-    // You might want to store connected websockets in a HashMap
-    // or another suitable data structure in your application
-    // and look up the websocket associated with the given username.
-    // Return None if the user is not found or not online.
-
-    // For example:
-    // CONNECTED_WEB_SOCKETS.get(username).cloned()
-
-    // Note: CONNECTED_WEB_SOCKETS is a placeholder and you should define and maintain
-    // your own data structure to manage connected websockets.
-}
-
- */

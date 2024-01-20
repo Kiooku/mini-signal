@@ -794,6 +794,7 @@ dependencies = [
  "bytes",
  "mini-redis",
  "native-tls",
+ "rand",
  "reqwest",
  "rusqlite",
  "serde",

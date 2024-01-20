@@ -211,24 +211,12 @@ async fn get_messages(username_receiver: &str) -> Result<Option<Vec<String>>, St
                                 let current_ek = message.5.map(PublicKey::from);
                                 let current_opk = message.6.map(PublicKey::from);
                                 let current_ik_sender = message.7.map(PublicKey::from);
-                                println!("{:?}", current_ik_sender);
                                 let current_message: Message = Message::new(HeaderHE::new(message.1, message.2), Ciphertext::new(message.3, message.4), current_ek, current_opk);
-                                /*let mut double_ratchet_client_guard = DOUBLE_RATCHET_CLIENT.lock().unwrap();
-                                let double_ratchet_res;
-                                if double_ratchet_client_guard.as_mut().unwrap().get_communication().contains_key(&message.0) {
-                                    double_ratchet_res = double_ratchet_client_guard.as_mut().unwrap().read_messages(&message.0, None, vec![current_message]);
-                                } else {
-                                    let sender_public_keys: ServerKeyCollection;
-                                    {
-                                        sender_public_keys = get_user_public_key(&message.0).await.unwrap();
-                                    }
-                                    double_ratchet_res = double_ratchet_client_guard.as_mut().unwrap().read_messages(&message.0, Some(sender_public_keys.get_ik()), vec![current_message]);
-                                }*/
-                                println!("{:?}", current_message);
+
                                 let double_ratchet_res = double_ratchet_client_guard.as_mut().unwrap().read_messages(&message.0, current_ik_sender, vec![current_message]);
-                                println!("{:?}", double_ratchet_res);
+
                                 let temp = double_ratchet_res.unwrap();
-                                println!("{:?}", temp);
+
                                 let current_plaintext_message: &Vec<u8> = temp.get(0).unwrap();
                                 plaintext_messages.push(String::from_utf8_lossy(&current_plaintext_message).to_string());
                                 // https://stackoverflow.com/questions/41034635/how-do-i-convert-between-string-str-vecu8-and-u8 (Good explanation for every kind of str conversion)
