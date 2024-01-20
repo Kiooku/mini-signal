@@ -90,16 +90,41 @@ And all possible responses in the `Response` enumeration in `main.rs`.
 > Tauri does not support some CSS function which modify slightly the final render from a browser. 
 > 
 > *e.g. `overflow-anchor: auto` and `backdrop-filter: saturate(120%) blur(14px);` are not supported.*
+> 
+> For example, some messages are not displayed when the password does not match in the registration page *(further work to improve the user experience with Tauri constraints).*.
 
-Three database on the client side (TODO)
-#### TODO
+Two database on the client side:
+1. Double Ratchet database:
+   1. **Double Ratchet** table: Store the state of the double ratchet for each communication.
+   2. **X3DH**: Store the X3DH keys of the client.
+   3. **OPK Bundle**: Store the opk keys of the client.
+2. **Messages** database: Store the message decrypted of the user.
 
-**Note for later**: `overflow-anchor: auto` and `backdrop-filter: saturate(120%) blur(14px);` not supported on Tauri 
-(which slightly change the quality of the result).
+> **Note**
+> 
+> To increase client-side security, it would be preferable to encrypt each database with a password *(the same as the one used to connect to the server)*.
+> 
+> However, as far as I know, rusqlite doesn't allow this, and I'd have to use another crate. This may be a project update for later.
+
+Functionalities:
+- Light and dark mode
+- Search user
+- Search message
+
+Messages are gathered every 5 seconds on the server, so it's not instant E2EE encryption, but there is a certain delay. 
+The switch to instant E2EE is a future application update.
 
 ### Conclusion
 
-#### TODO talk about the vulnerability if someone hack the client or the server.
+The aim of this project was to see the complexity of creating a secure messaging application prototype. 
+Moreover, it allowed me to use my [X3DH](https://github.com/Kiooku/Cryptography-Notebook/tree/main/AsymmetricCiphers/x3dh) and [double ratchet algorithm](https://github.com/Kiooku/Cryptography-Notebook/tree/main/E2EE/double-ratchet-with-header-encryption) in a real world context.
+In addition, it's a great opportunity to bring together most of the knowledge I have in [cryptography](https://github.com/Kiooku/Cryptography-Notebook) and computer science *(Database management, server, front-end, concurrent programming...)*
+
+This is my first major project in rust and my first application in tauri. So I've learned a lot during this project. 
+It's still an MVP and the project should be cleaned up in several points to get closer to a secure messaging application like Signal.
+
+This project was carried out during my winter break. 
+Features such as the management of message encryption sessions in an asynchronous and multi-device setting *[(Sesame algorithm)](https://signal.org/docs/specifications/sesame/)*, or private group system [(Zero-knowledge groups)](https://eprint.iacr.org/2019/1416.pdf),  could be implemented later, depending on my learning journey.
 
 ## Resources
 - https://signal.org/docs/
