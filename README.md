@@ -18,6 +18,10 @@ for the user interface.
 **Keywords**: end-to-end messaging service, double ratchet, E2EE, X3DH, TCP, TLS, Signal, SQLite, AES-GCM-SIV, AEAD,
 Rust, Tauri, HTML, CSS, JS, Security, Privacy, Concurrency, Tokio
 
+**Preview**
+
+[preview_mini_signal.webm](https://github.com/Kiooku/mini-signal/assets/33032066/8129c783-d149-4eb0-a419-1ab639ff574a)
+
 ## Table of content
 
 1. [How to install mini-signal](#how-to-install-mini-signal)
@@ -26,8 +30,8 @@ Rust, Tauri, HTML, CSS, JS, Security, Privacy, Concurrency, Tokio
    - [Cryptography](#cryptography)
    - [Server](#server)
    - [Client](#client)
-   - [Conclusion](#conclusion)
-4. [Resources](#resources)
+4. [Conclusion](#conclusion)
+5. [Resources](#resources)
 
 ## How to install mini-signal
 
@@ -114,7 +118,7 @@ Functionalities:
 Messages are gathered every 5 seconds on the server, so it's not instant E2EE encryption, but there is a certain delay. 
 The switch to instant E2EE is a future application update.
 
-### Conclusion
+## Conclusion
 
 The aim of this project was to see the complexity of creating a secure messaging application prototype. 
 Moreover, it allowed me to use my [X3DH](https://github.com/Kiooku/Cryptography-Notebook/tree/main/AsymmetricCiphers/x3dh) and [double ratchet algorithm](https://github.com/Kiooku/Cryptography-Notebook/tree/main/E2EE/double-ratchet-with-header-encryption) in a real world context.
