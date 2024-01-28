@@ -15,9 +15,6 @@ for the user interface.
 
 *What's more, there's still a bit of work to be done to completely clean up the project, even if the result is quite decent and fully functional.*
 
-**Keywords**: end-to-end messaging service, double ratchet, E2EE, X3DH, TCP, TLS, Signal, SQLite, AES-GCM-SIV, AEAD,
-Rust, Tauri, HTML, CSS, JS, Security, Privacy, Concurrency, Tokio
-
 **Preview**
 
 [preview_mini_signal.webm](https://github.com/Kiooku/mini-signal/assets/33032066/8129c783-d149-4eb0-a419-1ab639ff574a)
